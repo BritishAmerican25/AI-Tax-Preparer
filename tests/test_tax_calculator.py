@@ -64,22 +64,22 @@ def _make_input(
 
 
 def test_standard_deduction_single_under_65():
-    sd = _standard_deduction(FilingStatus.SINGLE, 40, None)
+    sd = _standard_deduction(FilingStatus.SINGLE, 40, None, 2024)
     assert sd == 14_600
 
 
 def test_standard_deduction_single_over_65():
-    sd = _standard_deduction(FilingStatus.SINGLE, 65, None)
+    sd = _standard_deduction(FilingStatus.SINGLE, 65, None, 2024)
     assert sd == 14_600 + 1_950
 
 
 def test_standard_deduction_mfj_both_over_65():
-    sd = _standard_deduction(FilingStatus.MARRIED_JOINTLY, 67, 66)
+    sd = _standard_deduction(FilingStatus.MARRIED_JOINTLY, 67, 66, 2024)
     assert sd == 29_200 + 1_550 + 1_550
 
 
 def test_standard_deduction_hoh():
-    sd = _standard_deduction(FilingStatus.HEAD_OF_HOUSEHOLD, 40, None)
+    sd = _standard_deduction(FilingStatus.HEAD_OF_HOUSEHOLD, 40, None, 2024)
     assert sd == 21_900
 
 
