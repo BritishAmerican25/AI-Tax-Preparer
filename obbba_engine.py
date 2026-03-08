@@ -65,12 +65,12 @@ class TaxVault:
         self._secure_storage = {}
 
     def tokenize_user_data(self, pii_data):
-        user_id = str(uuid.uuid4())
+        token_id = str(uuid.uuid4())
         # Store sensitive data locally; only return the tokenized profile
-        self._secure_storage[user_id] = pii_data 
+        self._secure_storage[token_id] = pii_data 
         
         return {
-            "token_id": user_id,
+            "token_id": token_id,
             "filing_status": pii_data.get("filing_status"),
             "income_summary": {
                 "w2_wages": pii_data.get("wages"),
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         "user_id": tokenized_profile['token_id'],
         "obbba_summary": {
             "tax_free_overtime": ot_deduction,
-            "tax_free_tips": raw_data['tips'], # Fully deductible up to cap
+            "tax_free_tips": min(raw_data['tips'], engine.TIP_DEDUCTION_CAP),
             "car_interest_deduction": raw_data['car_interest_paid'] if car_eligibility else 0,
             "trump_account_federal_seed": "$1,000" if trump_election['federal_seed_eligible'] else "$0"
         }
