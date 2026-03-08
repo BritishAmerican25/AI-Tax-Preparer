@@ -8,3 +8,17 @@ dist/
 build/
 venv/
 .venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.pytest_cache/
+.mypy_cache/
+*.so
+.env
+.venv/
+venv/
