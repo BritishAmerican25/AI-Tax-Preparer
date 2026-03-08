@@ -96,9 +96,10 @@ function collectPayload() {
   const taxpayer_age  = parseInt(v('taxpayer_age').value) || 35;
   const spouse_age    = ['married_filing_jointly', 'qualifying_surviving_spouse'].includes(filing_status)
                           ? (parseInt(v('spouse_age').value) || 35) : undefined;
+  const tax_year      = parseInt(v('tax_year').value) || 2024;
 
   return {
-    tax_year:    2024,
+    tax_year,
     filing_status,
     taxpayer_age,
     ...(spouse_age !== undefined && { spouse_age }),
@@ -124,6 +125,13 @@ function collectPayload() {
     self_employment_income:               num('se_income'),
     retirement_contributions_traditional: num('retirement'),
     health_savings_account_contribution:  num('hsa'),
+    // OBBBA 2026 fields
+    obbba_overtime_premium:     num('obbba_overtime'),
+    obbba_tips:                 num('obbba_tips'),
+    obbba_car_vin:              v('obbba_car_vin')?.value || null,
+    obbba_car_interest_paid:    num('obbba_car_interest'),
+    obbba_child_dob:            v('obbba_child_dob')?.value || null,
+    obbba_child_has_ssn:        v('obbba_child_ssn')?.checked || false,
   };
 }
 
@@ -181,6 +189,35 @@ function renderCalc(r) {
     tr.innerHTML = `<td><strong>${b.rate}</strong></td><td>${fmt(b.income_in_bracket)}</td><td>${fmt(b.tax_in_bracket)}</td>`;
     tbody.appendChild(tr);
   });
+
+  // OBBBA 2026 Summary
+  const hasOBBBA = r.obbba_no_tax_overtime > 0 || r.obbba_no_tax_tips > 0 ||
+                   r.obbba_car_interest_deduction > 0 || r.obbba_trump_account_info;
+  const obbbaSummary = document.getElementById('obbba-summary');
+  if (hasOBBBA) {
+    obbbaSummary.style.display = 'block';
+    document.getElementById('obbba-ot').textContent = fmt(r.obbba_no_tax_overtime || 0);
+    document.getElementById('obbba-tips').textContent = fmt(r.obbba_no_tax_tips || 0);
+    document.getElementById('obbba-car').textContent = fmt(r.obbba_car_interest_deduction || 0);
+
+    const carMsg = document.getElementById('obbba-car-msg');
+    if (r.obbba_car_eligibility_message) {
+      carMsg.textContent = 'Car: ' + r.obbba_car_eligibility_message;
+    } else {
+      carMsg.textContent = '';
+    }
+
+    const trumpDiv = document.getElementById('obbba-trump');
+    if (r.obbba_trump_account_info && r.obbba_trump_account_info.federal_seed_eligible) {
+      trumpDiv.textContent = '✓ Trump Account eligible for $1,000 federal seed';
+    } else if (r.obbba_trump_account_info) {
+      trumpDiv.textContent = 'Trump Account not eligible (check requirements)';
+    } else {
+      trumpDiv.textContent = '';
+    }
+  } else {
+    obbbaSummary.style.display = 'none';
+  }
 }
 
 /* ── Render Phase 2 compliance ──────────────────────────────── */
@@ -346,6 +383,21 @@ function showError(msg) {
 }
 function hideError() {
   document.getElementById('error-banner').classList.add('hidden');
+}
+
+/* ── OBBBA fields toggle ────────────────────────────────────── */
+function toggleOBBBAFields() {
+  const taxYear = parseInt(document.getElementById('tax_year').value);
+  const obbbFields = document.getElementById('obbba-fields');
+  const yearBadge = document.getElementById('year-badge');
+
+  if (taxYear >= 2026) {
+    obbbFields.style.display = 'block';
+    yearBadge.textContent = '2026 Federal Return (OBBBA)';
+  } else {
+    obbbFields.style.display = 'none';
+    yearBadge.textContent = '2024 Federal Return';
+  }
 }
 
 /* ── Init: add first income row (empty, ready for user input) ── */
