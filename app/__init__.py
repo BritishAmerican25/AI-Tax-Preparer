@@ -1,6 +1,6 @@
 """AI Tax Preparer – application factory."""
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -22,6 +22,10 @@ def create_app(config_override: dict | None = None) -> Flask:
     from app.routes.tax import tax_bp
 
     app.register_blueprint(tax_bp, url_prefix="/api/v1")
+
+    @app.get("/")
+    def index():
+        return render_template("index.html")
 
     @app.get("/health")
     def health():
