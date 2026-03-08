@@ -88,7 +88,7 @@ class Credits(BaseModel):
 class TaxReturnInput(BaseModel):
     """Top-level input for a tax return submission."""
 
-    tax_year: int = Field(..., ge=2020, le=2025, description="Tax year being filed")
+    tax_year: int = Field(..., ge=2020, le=2026, description="Tax year being filed")
     filing_status: FilingStatus
     taxpayer_age: int = Field(..., ge=0, le=130)
     spouse_age: Optional[int] = Field(None, ge=0, le=130)
@@ -100,6 +100,14 @@ class TaxReturnInput(BaseModel):
     self_employment_income: float = Field(0.0, ge=0)
     retirement_contributions_traditional: float = Field(0.0, ge=0)
     health_savings_account_contribution: float = Field(0.0, ge=0)
+
+    # OBBBA 2026-specific fields (Box 12 codes)
+    obbba_overtime_premium: float = Field(0.0, ge=0, description="Qualified overtime premium (Box 12, Code TT)")
+    obbba_tips: float = Field(0.0, ge=0, description="Qualified tips (Box 12, Code TP)")
+    obbba_car_vin: Optional[str] = Field(None, description="VIN for car loan interest deduction")
+    obbba_car_interest_paid: float = Field(0.0, ge=0, description="Car loan interest paid")
+    obbba_child_dob: Optional[str] = Field(None, description="Child DOB for Trump Account (YYYY-MM-DD)")
+    obbba_child_has_ssn: bool = Field(False, description="Whether child has SSN for Trump Account")
 
     @model_validator(mode="after")
     def validate_spouse_fields(self) -> "TaxReturnInput":
@@ -129,6 +137,13 @@ class TaxCalculationResult(BaseModel):
     refund_or_owed: float
     breakdown_by_bracket: list[dict]
     phase: str = "Phase 1 – Tax Calculation"
+
+    # OBBBA 2026-specific fields
+    obbba_no_tax_overtime: float = 0.0
+    obbba_no_tax_tips: float = 0.0
+    obbba_car_interest_deduction: float = 0.0
+    obbba_car_eligibility_message: Optional[str] = None
+    obbba_trump_account_info: Optional[dict] = None
 
 
 class ComplianceCheckResult(BaseModel):
